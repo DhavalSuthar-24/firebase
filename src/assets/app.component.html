@@ -1,0 +1,49 @@
+
+<div class="font-mono" *ngIf="!isSignedIn">
+<div class="flex h-screen">
+    <img class="w-1/2 hidden lg:block" src="assets/n3.jpg">
+    <div class="flex flex-col justify-center items-center w-full lg:w-1/2 ">
+        
+<div >
+ <div class="text-xl text-center font-bold lg:text-left">
+    <span class="text-red-600">&#9650;</span>
+    <span> AngularJS!!!</span>
+ </div>
+ <div class="text-3xl text-center font-bold lg:text-left">
+    <h2>Hello,</h2>
+    <h2>Welcome BAck</h2>
+ </div>
+
+ <form #user  class="mt-8 w-[80%] lg:w-96  mx-auto space-y-4">
+       <h4>Signup to create your account.</h4>
+       <input autocomplete="off" name="email" class="border w-full px-4 py-2 " type="email" #email placeholder="Enter Your Email">
+       <input autocomplete="off" name="password" class="border w-full px-4 py-2 mt-5" type="password" #password placeholder="Enter Your Password">
+       <div class="text-blue-500 cursor-pointer hover:text-blue-700">Forgot Your Password</div>
+       <button (click)="onSignup(email.value, password.value)"  class="w-full border bg-red-500 text-black font-bold hover:bg-red-600 py-2 rounded" type="submit">Sign Up</button>
+
+ </form>
+</div>
+ <div class="text-center space-y-4 mt-4">
+    <span>OR</span>
+    <div class="flex justify-center items-center gap-8">
+<i class="fa-brands fa-google text-3xl cursor-pointer opacity-0 hover:opacity-30"></i>
+
+<i class="fa-brands fa-facebook text-3xl cursor-pointer"></i>
+<i class="fa-brands fa-instagram text-3xl cursor-pointer"></i>
+
+
+    </div>
+ </div>
+ <!-- <div class="mt-4 text-sm text-center">
+    Already have account ? <a routerLink="#"><span class="text-blue-600 cursor-pointer hover:text-blue-400">
+        Sign Up
+    </span></a>
+ </div> -->
+    </div>
+</div>
+
+</div>
+<app-home (isLogout)="onlogout()" *ngIf="isSignedIn"></app-home>
+
+<!-- <app-landing-pg></app-landing-pg> -->
+<!-- <app-login></app-login> -->

@@ -1,0 +1,24 @@
+<div class="font-mono">
+  <h1 class="text-3xl font-bold  text-center bg bg-red-300">Admin Dashboard (User Lists)</h1>
+  <div class="overflow-x-auto">
+    <table class="w-full bg-white shadow-md rounded">
+      <thead>
+        <tr class="bg-green-600 text-white">
+          <th class="px-6 py-3 border border-black text-left font-semibold uppercase">Index</th>
+          <th class="px-6 py-3 border border-black text-left font-semibold uppercase">Emails</th>
+          <th class="px-6 py-3 border border-black text-left font-semibold uppercase">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let email of userEmails; let i=index" class="bg-green-100">
+          <td class="px-6 py-4 border border-black">{{ i + 1 }}</td>
+          <td class="px-6 py-4 border border-black">{{ email }}</td>
+          <td class="px-6 py-4 border border-black">
+            <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" (click)="deleteUser(email)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <button class="block mx-auto mt-8 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" (click)="aservice.SignOut()">Log Out</button>
+</div>

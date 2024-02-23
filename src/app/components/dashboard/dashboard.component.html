@@ -1,0 +1,62 @@
+<nav class="bg-green-300 w-screen flex justify-between items-center py-4 px-3">
+  <h1 class="text-center text-3xl">Todo List</h1>
+  <div class="flex items-center">
+    <button class="bg-blue-400 px-4 py-2 border rounded hover:bg-blue-600 hover:border-black" (click)="toggleform()">
+      Add Todo
+    </button>
+    <button class="bg-red-400 px-4 py-2 border rounded hover:bg-red-600 hover:border-black ml-4" (click)="authService.SignOut()">
+      <i class="fas fa-sign-out-alt"></i>Log out
+    </button>
+  </div>
+</nav>
+
+<div class="container mx-auto flex justify-center items-center h-screen">
+  <div class="bg-gray-100 p-8 rounded-lg shadow-lg">
+    <!-- Form (conditionally displayed based on formVisible) -->
+    <form [formGroup]="studentForm" class="card border-0 shadow p-3" *ngIf="formvisible">
+      <!-- Form fields -->
+      <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="task" placeholder="" formControlName="task">
+        <label for="task">Task Name</label>
+      </div> 
+      <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="desc" placeholder="name@example.com" formControlName="desc">
+        <label for="desc">Description</label>
+      </div>
+      <div class="form-floating mb-3">
+        <input type="number" class="form-control" id="mobile" placeholder=" m no" formControlName="mobile">
+        <label for="mobile">Mobile no</label>
+      </div>
+      <!-- Submit button -->
+      <button type="button" class="btn btn-outline-success" (click)="addStudent()">Add Student</button>
+    </form>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="container mx-auto my-8">
+  <table class="w-full border-collapse border border-black">
+    <!-- Table header -->
+    <thead class="bg-gray-100">
+      <tr class="border-b border-black">
+        <th class="px-6 py-3 border-b border-black text-center">Index</th>
+        <th class="px-6 py-3 border-b border-black text-center">Todo</th>
+        <th class="px-6 py-3 border-b border-black text-center">Description</th>
+        <th class="px-6 py-3 border-b border-black text-center">Duration</th>
+        <th class="px-6 py-3 border-b border-black text-center">Action</th> <!-- Empty header for delete button -->
+      </tr>
+    </thead>
+    <!-- Table body -->
+    <tbody>
+      <tr *ngFor="let student of studentList; let i = index" class="border-b border-black">
+        <td class="px-6 py-4 whitespace-nowrap border-r border-black text-center">{{ i + 1 }}</td>
+        <td class="px-6 py-4 whitespace-nowrap border-r border-black text-center">{{ student.name }}</td>
+        <td class="px-6 py-4 whitespace-nowrap border-r border-black text-center">{{ student.desc }}</td>
+        <td class="px-6 py-4 whitespace-nowrap border-r border-black text-center">{{ student.mobile }}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-center">
+          <button class="bg-red-400 hover:bg-red-700 border-spacing-2 border-black rounded p-2" (click)="deleteStudent(student)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
