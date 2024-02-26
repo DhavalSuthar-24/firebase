@@ -11,14 +11,12 @@ export class SignUpComponent implements OnInit {
   constructor(public authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
-    this.checkLoggedIn();
+ if(!this.authService.isLoggedIn()){
+   this.router.navigate(['/login']);
+ }
   }
 
-  checkLoggedIn(): void {
-    if (typeof localStorage !== 'undefined' && localStorage.getItem('isLoggedIn') === 'true') {
-      this.router.navigate(['/dashboard']);
-    }
-  }
+
 
   ntologin(): void {
     this.router.navigate(['/login']);

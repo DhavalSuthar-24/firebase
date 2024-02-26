@@ -1,25 +1,24 @@
-import { QuerySnapshot,QueryDocumentSnapshot } from '@angular/fire/compat/firestore';
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { AngularFirestore, QuerySnapshot } from '@angular/fire/compat/firestore';
 import { Router } from '@angular/router';
-import firebase from 'firebase/compat/app';
-
 import { GoogleAuthProvider } from '@angular/fire/auth';
-import { DataService } from './data.service';
+import { Observable, of } from 'rxjs';
+import { map, switchMap, take } from 'rxjs/operators';
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   adminEmails: string[] = ['dhavalll63@gmail.com', 'dhaval00033@gmail.com'];
-ucname:string='';
+  userCollectionName: string | undefined;
+
   constructor(
     public afs: AngularFirestore,
     public afAuth: AngularFireAuth,
-    public router: Router,
-    // private authservice :AuthService
+    public router: Router
   ) {}
-  userCollectionName: string | undefined;
+
   isAdmin(email: string): boolean {
     return this.adminEmails.includes(email);
   }
@@ -27,72 +26,36 @@ ucname:string='';
   async SignUp(email: string, password: string): Promise<void> {
     try {
       const result = await this.afAuth.createUserWithEmailAndPassword(email, password);
-      await this.SendVerificationMail();
-
-      // Get collection name based on user email
       const emailPrefix = email.substring(0, 5);
-      const collectionName = await this.createCollection(emailPrefix);
-
-      this.userCollectionName = collectionName;
-
-      this.router.navigate(['/verify-email']);
+      await this.createCollection(emailPrefix);
+      // Call SendVerificationMail after user creation
+      await this.SendVerificationMail();
     } catch (error) {
-      window.alert (error);
-    }
-  }
-
-  async createCollection(collectionName: string): Promise<string> {
-    try {
-      const collectionRef = this.afs.collection(collectionName);
-      await collectionRef.doc('placeholder').set({ created_at: new Date() });
-      return collectionName;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  getUserCollectionName(): string | undefined {
-    return this.userCollectionName;
-  }
-
- 
-  // auth.service.ts
-
-  private isLoggedInFlag = false;
-
-  // Other AuthService methods...
-
-  isLoggedIn(): boolean {
-    if (typeof localStorage !== 'undefined') {
-      return localStorage.getItem('isLoggedIn') === 'true';
-    } else {
-      // Handle the case where localStorage is not available
-      return false; // Or implement your own logic for handling this case
+      window.alert(error);
     }
   }
   
-
-
-   
   async SendVerificationMail() {
     try {
       const user = await this.afAuth.currentUser;
       if (user && user.email && !user.emailVerified) {
         await user.sendEmailVerification();
-        this.router.navigate(['verify-email']);
+        console.log('Verification email sent.');
+        // Navigate to verify-email page
+        this.router.navigate(['/verify-email']); 
+        await this.saveuserEmail(user.email);
       } else if (user && user.email && user.emailVerified) {
         console.log('Email is already verified.');
       } else {
         console.log('No user found or email not available.');
       }
-
-      if (user && user.email) {
-        await this.saveuserEmail(user.email);
-      }
     } catch (error) {
-      console.log('Error sending verification email:', error);
+      console.error('Error sending verification email:', error);
     }
   }
+  
+  
+  
 
   async saveuserEmail(email: string) {
     try {
@@ -110,52 +73,36 @@ ucname:string='';
   }
 
   SignIn(email: string, password: string) {
-    return this.afAuth
-      .signInWithEmailAndPassword(email, password)
+    return this.afAuth.signInWithEmailAndPassword(email, password)
       .then((result) => {
         if (result.user) {
           const userEmail = result.user.email || '';
           this.navigateBasedOnUserRole(userEmail);
-  
-          // Set the user collection name after determining the user's role
-          if (this.isAdmin(userEmail)) {
-            // Set the admin collection name if user is admin
-            this.userCollectionName = 'AdminUser'; // Update this with your admin collection name
-          } else {
-            // Set the regular user collection name if user is not admin
-            const emailPrefix = userEmail.substring(0, 5);
-            this.userCollectionName = emailPrefix;
-          }
-  
-          // Set flag indicating user is logged in
+          this.userCollectionName = this.isAdmin(userEmail) ? 'AdminUser' : userEmail.substring(0, 5);
           localStorage.setItem('isLoggedIn', 'true');
         } else {
           console.log('No user found.');
         }
       })
       .catch((error) => {
-        // Show error in alert
         window.alert(error.message);
       });
   }
-  
-  
-  
 
   async SignUpWithGoogle() {
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
       const result = await this.afAuth.signInWithPopup(provider);
-  
+      
       if (result.user) {
         const userEmail = result.user.email || '';
         if (this.isAdmin(userEmail)) {
-          // Navigate to admin dashboard for admin users
+         // Save the user's email to the AdminUser collection
           this.router.navigate(['/admin-dashboard']);
         } else {
-          // Navigate to regular user dashboard
           this.router.navigate(['/dashboard']);
+          await this.saveuserEmail(userEmail); 
         }
       } else {
         console.log('No user found.');
@@ -164,14 +111,17 @@ ucname:string='';
       console.error('Error during Google sign-up:', error);
     }
   }
-  
+  async ForgotPassword(passwordResetEmail: string) {
+    try {
+      await this.afAuth.sendPasswordResetEmail(passwordResetEmail);
+      window.alert('Password reset email sent, check your inbox.');
+    } catch (error) {
+      window.alert(error);
+    }
+  }
 
   navigateBasedOnUserRole(userEmail: string) {
-    if (this.isAdmin(userEmail)) {
-      this.router.navigate(['admin-dashboard']);
-    } else {
-      this.router.navigate(['dashboard']);
-    }
+    this.router.navigate(this.isAdmin(userEmail) ? ['admin-dashboard'] : ['dashboard']);
   }
 
   SignOut() {
@@ -181,42 +131,7 @@ ucname:string='';
     });
   }
 
-  ForgotPassword(passwordResetEmail: string) {
-    return this.afAuth
-      .sendPasswordResetEmail(passwordResetEmail)
-      .then(() => {
-        window.alert('Password reset email sent, check your inbox.');
-      })
-      .catch((error) => {
-        window.alert(error);
-      });
-  }
-
-  async getCurrentUserEmail(): Promise<string | null> {
-    try {
-      const user = await this.afAuth.currentUser;
-      return user ? user.email : null;
-    } catch (error) {
-      console.error('Error getting current user:', error);
-      return null;
-    }
-  }
-  async getAlluser() {
-    try {
-      const snapshot: QuerySnapshot<any> | undefined = await this.afs.collection('AdminUser').get().toPromise();
-      if (snapshot) {
-        return snapshot.docs.map(doc => doc.data().email);
-      } else {
-        console.error('Error: Snapshot is undefined.');
-        return [];
-      }
-    } catch (error) {
-      console.error('Error retrieving user emails:', error);
-      return [];
-    }
-  }
-  
-  async deletebyEmail(email: string) {
+  async deleteByEmail(email: string) {
     try {
       const snapshot = await this.afs.collection('AdminUser', ref => ref.where('email', '==', email)).get().toPromise();
       if (snapshot) {
@@ -229,9 +144,24 @@ ucname:string='';
       console.error('Error deleting user:', error);
     }
   }
+
+  isLoggedIn(): Observable<boolean> {
+    return this.afAuth.authState.pipe(map(user => !!user));
+  }
+
+  getAlluser(): Observable<string[]> {
+    return this.afs.collection('AdminUser').get().pipe(
+      map((snapshot: QuerySnapshot<any>) => snapshot.docs.map((doc: any) => doc.data().email))
+    );
+  }
+
+  private async createCollection(collectionName: string): Promise<string> {
+    try {
+      const collectionRef = this.afs.collection(collectionName);
+      await collectionRef.doc('placeholder').set({ created_at: new Date() });
+      return collectionName;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
-  
-  
-
-
-

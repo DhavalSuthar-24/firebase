@@ -4,7 +4,7 @@ import { DataService } from '../../shared/services/data.service';
 import { Student } from '../../model/student';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import firebase from 'firebase/compat/app';
-
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -16,12 +16,12 @@ export class DashboardComponent implements OnInit {
   userCollectionName: string | undefined;
   formvisible:boolean;
 
-  constructor(public authService: AuthService, private ds: DataService, private fb: FormBuilder) {
+  constructor(public authService: AuthService, private r:Router,private ds: DataService, private fb: FormBuilder) {
     
   }
 
   ngOnInit(): void {
-    this.userCollectionName = this.authService.getUserCollectionName();
+    this.userCollectionName = this.authService.userCollectionName;
     
     this.studentForm = this.fb.group({
       task: ['', Validators.required],
@@ -34,8 +34,12 @@ export class DashboardComponent implements OnInit {
     } else {
       console.error('User collection name not found.');
     }
-  }
+    if(!this.authService.isLoggedIn()){
+      this.r.navigate(['/login']);
 
+
+  }
+  }
   resetForm(): void {
     this.studentForm.reset();
     this.studentForm.markAsPristine();
