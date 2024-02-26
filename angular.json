@@ -28,6 +28,11 @@
             "browser": "src/main.ts",
             "polyfills": [
               "zone.js"
+            ],"allowedCommonJsDependencies": [
+              "undici",
+              "@grpc/grpc-js",
+              "@grpc/proto-loader",
+              "faye-websocket"
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
