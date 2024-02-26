@@ -147,10 +147,16 @@ ucname:string='';
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
       const result = await this.afAuth.signInWithPopup(provider);
-
+  
       if (result.user) {
         const userEmail = result.user.email || '';
-        this.navigateBasedOnUserRole(userEmail);
+        if (this.isAdmin(userEmail)) {
+          // Navigate to admin dashboard for admin users
+          this.router.navigate(['/admin-dashboard']);
+        } else {
+          // Navigate to regular user dashboard
+          this.router.navigate(['/dashboard']);
+        }
       } else {
         console.log('No user found.');
       }
@@ -158,6 +164,7 @@ ucname:string='';
       console.error('Error during Google sign-up:', error);
     }
   }
+  
 
   navigateBasedOnUserRole(userEmail: string) {
     if (this.isAdmin(userEmail)) {
@@ -185,9 +192,14 @@ ucname:string='';
       });
   }
 
- getCurrentUserEmail(): string | null {
-    const user = this.afAuth.currentUser;
-    return user ?  user.email : null;
+  async getCurrentUserEmail(): Promise<string | null> {
+    try {
+      const user = await this.afAuth.currentUser;
+      return user ? user.email : null;
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      return null;
+    }
   }
   async getAlluser() {
     try {
