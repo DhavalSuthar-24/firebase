@@ -1,0 +1,10 @@
+{
+  "routes": [
+    "/admin-dashboard",
+    "/dashboard",
+    "/forget-password",
+    "/login",
+    "/sign-up",
+    "/verify-email"
+  ]
+}
